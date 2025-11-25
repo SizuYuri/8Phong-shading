@@ -1,3 +1,11 @@
+/*
+ * Annotated for clarity:
+ *  - This project implements Phong shading with optional normal mapping,
+ *    supports up to 8 lights (directional/point/spot), and uses ImGui for GUI.
+ *  - Comments below explain intent, data flow, and non-obvious bits.
+ *  - Behavior is unchanged; only comments were added.
+ */
+
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -49,21 +57,21 @@ float     shininess = 32.0f;
 
 std::vector<LightCPU> lights;
 
-// Вращение модели
+//  
 static bool  g_RotateEnabled = true;
 static bool  g_RotateX = true, g_RotateY = true, g_RotateZ = false;
 static float g_RotateSpeed = 0.6f;
 
-// Гизмы
+// 
 static bool  g_ShowLightGizmos = true;
 
-// Blender-навигация
+// Blender-
 static glm::vec3 g_OrbitCenter = glm::vec3(0.0f);
 static float     g_OrbitDist = 5.0f;
 static float     g_YawDeg = -90.0f;
 static float     g_PitchDeg = 0.0f;
 
-// Диагностика
+// 
 static bool   g_ShowDiag = true;
 static bool   g_VSync = false;
 static bool   g_Stress = false;
@@ -71,7 +79,7 @@ static bool   g_Stress = false;
 // GPU timer query (ping-pong)
 static bool   g_HasTimerQuery = false;
 static GLuint g_TimerQuery[2] = { 0,0 };
-static int    g_TimerWrite = 0;     // в какой query пишем сейчас
+static int    g_TimerWrite = 0;     //   query  
 static double g_LastGpuMs = 0.0;
 
 static double g_LastCpuMs = 0.0;
@@ -95,6 +103,7 @@ static void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int hei
     glViewport(0, 0, width, height);
 }
 
+// GLFW mouse callback: orbit/pan/dolly depending on modifiers.
 static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 #ifdef USE_IMGUI
     ImGuiIO& io = ImGui::GetIO();
@@ -135,6 +144,7 @@ static void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     }
 }
 
+// GLFW scroll callback: zoom camera.
 static void scroll_callback(GLFWwindow* /*window*/, double /*xoffset*/, double yoffset) {
 #ifdef USE_IMGUI
     ImGuiIO& io = ImGui::GetIO();
@@ -162,22 +172,26 @@ static GLuint loadTexture2D(const char* path) {
     return tex;
 }
 
+// Open a native dialog to choose an optional normal map.
 static void showNormalMapDialog() {
     const char* patterns[] = { "*.png","*.jpg","*.jpeg","*.tga","*.bmp" };
     const char* fp = tinyfd_openFileDialog("Normal map (optional)", "", 5, patterns, "Images", 0);
     if (fp) { normalMapTex = loadTexture2D(fp); useNormalMap = (normalMapTex != 0); }
 }
 
+// Load a 3D model via the Model class (Assimp under the hood).
 static void loadModel(const char* path) {
     delete ourModel; ourModel = new Model(path);
 }
 
+// Open a native dialog to choose a 3D model to load.
 static void showModelDialog() {
     const char* patterns[] = { "*.obj","*.fbx","*.dae","*.3ds","*.ply" };
     const char* fp = tinyfd_openFileDialog("Choose model", "", 5, patterns, "Models", 0);
     if (fp) { std::cout << "Model: " << fp << std::endl; loadModel(fp); }
 }
 
+// Upload the active light array (max 8) into the shader uniforms.
 static void uploadLights(Shader& sh) {
     int n = (int)lights.size(); if (n > 8) n = 8;
     glUniform1i(glGetUniformLocation(sh.ID, "numLights"), n);
@@ -198,7 +212,7 @@ static void uploadLights(Shader& sh) {
     }
 }
 
-// ---------- таймеры: runtime-детекция без GLAD_GL_* макросов ----------
+// ---------- : runtime-  GLAD_GL_*  ----------
 static bool HasExtension(const char* name) {
     if (!name || !glad_glGetStringi) return false;
     GLint n = 0;
@@ -226,6 +240,7 @@ static void InitGpuTimersIfAvailable() {
     if (g_HasTimerQuery) glGenQueries(2, g_TimerQuery); // ping-pong
 }
 
+// Handle keyboard/mouse input (Blender-like camera: orbit/pan/dolly/zoom).
 static void processInput(GLFWwindow* window) {
 #ifdef USE_IMGUI
     ImGuiIO& io = ImGui::GetIO();
@@ -241,7 +256,7 @@ static void processInput(GLFWwindow* window) {
 }
 
 #ifdef USE_IMGUI
-// --- 2D гизмосы света поверх сцены ---
+// --- 2D     ---
 static bool project_to_screen(const glm::vec3& p, const glm::mat4& view, const glm::mat4& proj, ImVec2 display, ImVec2& out) {
     glm::vec4 clip = proj * view * glm::vec4(p, 1.0);
     if (clip.w <= 0.0f) return false;
@@ -304,6 +319,7 @@ static void draw_light_gizmos_2d(const glm::mat4& view, const glm::mat4& proj) {
 }
 #endif
 
+// Entry point: initialize window/GL, set callbacks, run the render loop.
 int main() {
     setlocale(LC_ALL, "ru");
 
@@ -339,7 +355,7 @@ int main() {
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 #endif
 
-    // инициализация орбиты
+    //  
     {
         g_OrbitCenter = glm::vec3(0.0f);
         g_OrbitDist = glm::length(camera.Position - g_OrbitCenter);
@@ -379,7 +395,9 @@ int main() {
 
 #ifdef USE_IMGUI
         if (g_ShowDiag) ImGui::SetNextWindowBgAlpha(0.9f);
+// ImGui: start a new UI frame.
         gui.beginFrame();
+// ImGui: build the Lighting & Material panel and controls.
         gui.draw();
 #endif
 
@@ -421,12 +439,12 @@ int main() {
             shader.setInt("normalMap", 0);
         }
 
-        // --- GPU timer start (в активный query)
+        // --- GPU timer start (  query)
         if (g_HasTimerQuery) glBeginQuery(GL_TIME_ELAPSED, g_TimerQuery[g_TimerWrite]);
 
         if (ourModel) ourModel->Draw(shader);
 
-        // стресс-нагрузка (x10)
+        // - (x10)
         if (g_Stress) {
             for (int i = 0; i < 10; ++i) {
                 shader.setFloat("shininess", shininess + i * 0.01f);
@@ -437,7 +455,7 @@ int main() {
         // --- GPU timer end
         if (g_HasTimerQuery) glEndQuery(GL_TIME_ELAPSED);
 
-        // --- GPU timer read (читаем предыдущий query, если готов)
+        // --- GPU timer read (  query,  )
         if (g_HasTimerQuery) {
             int readIdx = 1 - g_TimerWrite;
             if (g_TimerQuery[readIdx]) {
@@ -449,7 +467,7 @@ int main() {
                     g_LastGpuMs = ns / 1e6;
                 }
             }
-            g_TimerWrite = 1 - g_TimerWrite; // переключаемся
+            g_TimerWrite = 1 - g_TimerWrite; // 
         }
 
         // ---- CPU timer end
@@ -487,7 +505,7 @@ int main() {
                 if (g_HasTimerQuery) ImGui::Text("GPU time:  %.2f ms", g_LastGpuMs);
                 else ImGui::TextColored(ImVec4(1, 0.7f, 0, 1), "GPU timer not supported");
 
-                // простая индикация
+                //  
                 std::string V = vendor ? vendor : "";
                 for (auto& c : V) c = (char)tolower(c);
                 bool isMesa = (V.find("mesa") != std::string::npos || V.find("x.org") != std::string::npos);
@@ -516,6 +534,7 @@ int main() {
         }
         ImGui::End();
 
+// ImGui: render the UI draw data.
         gui.endFrame();
 #endif
 

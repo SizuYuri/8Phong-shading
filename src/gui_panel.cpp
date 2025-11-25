@@ -1,3 +1,11 @@
+/*
+ * Annotated for clarity:
+ *  - This project implements Phong shading with optional normal mapping,
+ *    supports up to 8 lights (directional/point/spot), and uses ImGui for GUI.
+ *  - Comments below explain intent, data flow, and non-obvious bits.
+ *  - Behavior is unchanged; only comments were added.
+ */
+
 #include "gui_panel.h"
 #ifdef USE_IMGUI
 #include "imgui.h"
@@ -41,12 +49,14 @@ void GuiPanel::shutdown() {
     ImGui::DestroyContext();
 }
 
+// ImGui: start a new UI frame.
 void GuiPanel::beginFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
 
+// ImGui: render the UI draw data.
 void GuiPanel::endFrame() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -189,6 +199,7 @@ void GuiPanel::drawLightsSection() {
     }
 }
 
+// ImGui: build the Lighting & Material panel and controls.
 void GuiPanel::draw() {
     if (ImGui::Begin("Lighting & Material")) {
         drawMaterialSection();

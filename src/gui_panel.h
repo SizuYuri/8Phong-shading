@@ -1,3 +1,11 @@
+/*
+ * Annotated for clarity:
+ *  - This project implements Phong shading with optional normal mapping,
+ *    supports up to 8 lights (directional/point/spot), and uses ImGui for GUI.
+ *  - Comments below explain intent, data flow, and non-obvious bits.
+ *  - Behavior is unchanged; only comments were added.
+ */
+
 #pragma once
 #ifdef USE_IMGUI
 
@@ -20,10 +28,13 @@ public:
 
     void init();
     void shutdown();
+// ImGui: start a new UI frame.
     void beginFrame();
+// ImGui: render the UI draw data.
     void endFrame();
 
-    void draw(); // окно "Lighting & Material"
+// ImGui: build the Lighting & Material panel and controls.
+    void draw(); //  "Lighting & Material"
 
 private:
     void drawMaterialSection();
