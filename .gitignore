@@ -1,0 +1,97 @@
+# 8Phong – tailored .gitignore (Visual Studio C++ / CMake / OpenGL demo)
+
+# ── IDE / Visual Studio ─────────────────────────────────────────────
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+*.opendb
+*.ipch
+
+# Other IDEs
+.vscode/
+.idea/
+
+# ── Visual Studio build dirs ────────────────────────────────────────
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+x64/
+x86/
+ARM*/
+Win32/
+
+# ── MSBuild/CL intermediates ────────────────────────────────────────
+*.obj
+*.iobj
+*.pdb
+*.idb
+*.ipdb
+*.ilk
+*.tlog
+*.lastbuildstate
+*.log
+*.pch
+*.exp
+*.lib
+
+# ── Executables / DLLs ──────────────────────────────────────────────
+*.exe
+*.dll
+*.drv
+*.sys
+
+# ── Crash dumps / diagnostics ───────────────────────────────────────
+*.dmp
+*.mdmp
+
+# ── CMake (ok to keep even if you don't use it yet) ────────────────
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+build/
+out/
+install_manifest.txt
+*.cmake
+
+# Ninja (if used)
+.ninja_deps
+.ninja_log
+
+# ── Temp / caches ───────────────────────────────────────────────────
+*.tmp
+*.temp
+*.cache
+*.bak
+
+# ── OS junk ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Third-party bins (keep sources/headers) ─────────────────────────
+third_party/**/bin/
+third_party/**/lib/
+third_party/**/build/
+third_party/**/out/
+third_party/**/.vs/
+# If you plan to commit a specific prebuilt lib/dll, add an exception, e.g.:
+# !third_party/assimp/lib/win64/assimp-vc143-mt.lib
+# !third_party/glfw/bin/win64/glfw3.dll
+
+# ── Assets/shaders caches (keep sources) ────────────────────────────
+assets/**/.cache/
+assets/**/generated/
+*.dds.cache
+*.ktx.cache
+
+# Do NOT ignore project shaders or assets (explicit allow)
+!shaders/**
+!assets/**
