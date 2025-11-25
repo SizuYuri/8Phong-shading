@@ -60,7 +60,7 @@
 6. Preprocessor definitions:
    - `USE_IMGUI`
    - `IMGUI_IMPL_OPENGL_LOADER_GLAD`
-7. Place `glfw3.dll` (if using DLL build) next to the `.exe`.
+7. Place `.dll` (if using DLL build) next to the `.exe`.
 
 > **Shader paths:** the code loads `shaders/vertex.shader` and `shaders/fragment.shader` (relative to the working directory).
 
