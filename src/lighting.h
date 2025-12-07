@@ -22,5 +22,5 @@ struct LightCPU {
     float specular = 0.3f;
 
     bool drawGizmo = true;
-    bool followCamera = false; // для прожектора, если нужно «прилипить» к камере
+    bool followCamera = false; // for the spotlight, if you need to "stick" to the camera
 };
