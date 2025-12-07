@@ -2,8 +2,6 @@
  * Annotated for clarity:
  *  - This project implements Phong shading with optional normal mapping,
  *    supports up to 8 lights (directional/point/spot), and uses ImGui for GUI.
- *  - Comments below explain intent, data flow, and non-obvious bits.
- *  - Behavior is unchanged; only comments were added.
  */
 
 #pragma once
